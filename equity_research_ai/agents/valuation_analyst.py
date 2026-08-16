@@ -150,6 +150,7 @@ class ValuationAnalystAgent:
             signal_log=signal_log,
             profile_adjustments=profile_adjustments,
             g1_begin=g1_begin,
+            current_margin=current_margin,
             avg_margin=avg_margin,
             margin_trend=margin_trend,
             terminal_margin=terminal_margin,
@@ -397,27 +398,27 @@ class ValuationAnalystAgent:
 
         elif life_cycle_stage == "high_growth":
             target_terminal = min(revenue_cagr * 0.5, 0.03)
-            reasoning = f"High-growth company fading: {revenue_cagr:.1%} CAGR → half for terminal"
+            reasoning = f"High-growth company fading: {revenue_cagr:.1%} CAGR -> half for terminal"
 
         elif life_cycle_stage == "mature_growth":
             target_terminal = 0.025
-            reasoning = "Mature growth company → GDP-like growth"
+            reasoning = "Mature growth company -> GDP-like growth"
 
         elif life_cycle_stage == "mature_stable":
             target_terminal = 0.02
-            reasoning = "Mature stable company → long-term GDP-like growth"
+            reasoning = "Mature stable company -> long-term GDP-like growth"
 
         elif life_cycle_stage == "decline":
             target_terminal = max(revenue_cagr * 0.5, -0.02)
-            reasoning = f"Declining company → perpetual decline at half CAGR or floor"
+            reasoning = f"Declining company -> perpetual decline at half CAGR or floor"
 
         elif life_cycle_stage == "distress":
             target_terminal = max(revenue_cagr, -0.05)
-            reasoning = "Distress company → negative or flat terminal growth"
+            reasoning = "Distress company -> negative or flat terminal growth"
 
         else:
             target_terminal = 0.02
-            reasoning = "Unknown lifecycle → default mature growth"
+            reasoning = "Unknown lifecycle -> default mature growth"
 
         # Enforce upper bound: never exceed risk_free_rate
         terminal_growth = min(target_terminal, risk_free_rate - 0.005)
@@ -441,42 +442,42 @@ class ValuationAnalystAgent:
 
         if life_cycle_stage == "startup":
             terminal_beta = 0.95 * unlevered_beta + 0.05 * market_beta
-            reasoning = "Startup → rapid fade to market beta"
+            reasoning = "Startup -> rapid fade to market beta"
             convergence_year = 2
 
         elif life_cycle_stage == "young_growth":
             terminal_beta = 0.85 * unlevered_beta + 0.15 * market_beta
-            reasoning = "Young growth → gradual fade toward market beta"
+            reasoning = "Young growth -> gradual fade toward market beta"
             convergence_year = 3
 
         elif life_cycle_stage == "high_growth":
             terminal_beta = 0.70 * unlevered_beta + 0.30 * market_beta
-            reasoning = "High-growth → moderate fade toward market beta"
+            reasoning = "High-growth -> moderate fade toward market beta"
             convergence_year = 3
 
         elif life_cycle_stage == "mature_growth":
             terminal_beta = 0.50 * unlevered_beta + 0.50 * market_beta
-            reasoning = "Mature growth → 50/50 current/market beta"
+            reasoning = "Mature growth -> 50/50 current/market beta"
             convergence_year = 3
 
         elif life_cycle_stage == "mature_stable":
             terminal_beta = 0.40 * unlevered_beta + 0.60 * market_beta
-            reasoning = "Mature stable → mostly market beta"
+            reasoning = "Mature stable -> mostly market beta"
             convergence_year = 3
 
         elif life_cycle_stage == "decline":
             terminal_beta = 0.50 * unlevered_beta + 0.50 * market_beta
-            reasoning = "Declining → move toward market beta"
+            reasoning = "Declining -> move toward market beta"
             convergence_year = 3
 
         elif life_cycle_stage == "distress":
             terminal_beta = 0.30 * unlevered_beta + 0.70 * market_beta
-            reasoning = "Distress → mostly market beta (high uncertainty)"
+            reasoning = "Distress -> mostly market beta (high uncertainty)"
             convergence_year = 2
 
         else:
             terminal_beta = 0.50 * unlevered_beta + 0.50 * market_beta
-            reasoning = "Unknown lifecycle → 50/50 blend"
+            reasoning = "Unknown lifecycle -> 50/50 blend"
             convergence_year = 3
 
         # Don't force very low beta up too aggressively
@@ -497,17 +498,17 @@ class ValuationAnalystAgent:
         stage = profile.get("life_cycle_stage", "mature_stable")
         if stage == "mature_stable":
             growth_bonus *= 0.8
-            adjustments["lifecycle_growth"] = "mature_stable → 20% reduction"
+            adjustments["lifecycle_growth"] = "mature_stable -> 20% reduction"
 
         elif stage == "distress":
             growth_bonus *= 0.5
             margin_bonus *= 0.7
-            adjustments["lifecycle_growth"] = "distress → 50% reduction"
-            adjustments["lifecycle_margin"] = "distress → 30% reduction"
+            adjustments["lifecycle_growth"] = "distress -> 50% reduction"
+            adjustments["lifecycle_margin"] = "distress -> 30% reduction"
 
         elif stage == "decline":
             growth_bonus *= 0.7
-            adjustments["lifecycle_growth"] = "decline → 30% reduction"
+            adjustments["lifecycle_growth"] = "decline -> 30% reduction"
 
         # Cyclicality: handled separately in margin calc, but note it here
         if profile.get("is_cyclical"):
@@ -539,6 +540,32 @@ class ValuationAnalystAgent:
 
         return growth_bonus, margin_bonus, capital_bonus, adjustments
 
+    def _clean_narrative_phrase(self, text: str, max_len: int = 60) -> str:
+        """Clean and normalize narrative phrases for display."""
+        if not text:
+            return ""
+        
+        text = str(text).strip()
+        
+        # Remove duplicated words (e.g., "services services" -> "services")
+        words = text.split()
+        cleaned = []
+        for word in words:
+            if not cleaned or word.lower() != cleaned[-1].lower():
+                cleaned.append(word)
+        text = " ".join(cleaned)
+        
+        # Remove table/structural noise
+        text = text.replace("the following table", "")
+        text = text.replace("the following", "")
+        text = " ".join(text.split())  # Normalize whitespace
+        
+        # Truncate
+        if len(text) > max_len:
+            text = text[:max_len].rsplit(" ", 1)[0] + "..."
+        
+        return text
+
     def _build_assumption_bridge(
         self,
         revenue_cagr,
@@ -546,6 +573,7 @@ class ValuationAnalystAgent:
         signal_log,
         profile_adjustments,
         g1_begin,
+        current_margin,
         avg_margin,
         margin_trend,
         terminal_margin,
@@ -565,6 +593,9 @@ class ValuationAnalystAgent:
         """
         Build transparent derivation trail for each assumption.
         Used for auditability and explanation.
+        
+        BUG FIX (2026-08-16): Changed Current (TTM) margin from g1_begin (growth rate)
+        to current_margin (actual operating margin) to fix semantic inconsistency.
         """
         return {
             "lifecycle_stage": stage,
@@ -572,24 +603,24 @@ class ValuationAnalystAgent:
                 f"Historical revenue CAGR (5Y): {revenue_cagr:.2%}",
                 f"Lifecycle stage {stage} implies floor {self._get_stage_floor(stage):.1%}",
                 f"Growth signals identified: {len(signal_log.get('growth', []))} drivers",
-                *[s.get("phrase", "")[:60] for s in signal_log.get("growth", [])[:3]],
+                *[self._clean_narrative_phrase(s.get("phrase", "")) for s in signal_log.get("growth", [])[:3]],
                 f"Growth bonus after signals: +{sum(s.get('bonus', 0) for s in signal_log.get('growth', [])) - sum(s.get('penalty', 0) for s in signal_log.get('risks', [])):.1%}",
                 f"Profile adjustments applied: {profile_adjustments}",
                 f"Calculated cycle 1 begin: {g1_begin:.2%} (bounded by stage [{self._get_stage_floor(stage):.1%}, {self._get_stage_cap(stage):.1%}])",
             ],
             "operating_margin": [
                 f"Historical avg margin: {avg_margin:.2%}",
-                f"Current (TTM) margin: {g1_begin:.2%}",
+                f"Current (TTM) margin: {current_margin:.2%}",
                 f"Margin trend: {margin_trend}",
                 f"Margin signals identified: {len(signal_log.get('margin', []))} drivers",
-                *[s.get("phrase", "")[:60] for s in signal_log.get("margin", [])[:3]],
+                *[self._clean_narrative_phrase(s.get("phrase", "")) for s in signal_log.get("margin", [])[:3]],
                 f"Terminal margin before adjustments: {terminal_margin - sum(s.get('bonus', 0) for s in signal_log.get('margin', [])):.2%}",
                 f"Terminal margin after signals: {terminal_margin:.2%} (bounded [3%, 45%])",
             ],
             "capital_efficiency": [
                 f"Current sales-to-capital: {current_sales_to_capital:.2f}x",
                 f"Capital signals identified: {len(signal_log.get('capital', []))} drivers",
-                *[s.get("phrase", "")[:60] for s in signal_log.get("capital", [])[:3]],
+                *[self._clean_narrative_phrase(s.get("phrase", "")) for s in signal_log.get("capital", [])[:3]],
                 f"Capital bonus: +{capital_bonus:.2f}x",
                 f"Terminal sales-to-capital: {terminal_sales_to_capital:.2f}x (bounded [0.5x, 4.0x])",
             ],
@@ -606,7 +637,7 @@ class ValuationAnalystAgent:
                 f"Risk-free rate: {risk_free_rate:.2%}",
                 f"Terminal growth rate: {terminal_growth:.2%}",
                 terminal_growth_reasoning,
-                f"Constraint check: Terminal growth ({terminal_growth:.2%}) < Risk-free rate ({risk_free_rate:.2%}) ✓",
+                f"Constraint check: Terminal growth ({terminal_growth:.2%}) < Risk-free rate ({risk_free_rate:.2%}) [OK]",
             ],
         }
 
