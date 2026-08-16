@@ -1,0 +1,71 @@
+# Walmart Inc. (WMT) Equity Research Memo
+
+## Executive View
+
+- **Estimated intrinsic equity value:** $601.57bn
+- **Current market cap:** $917.33bn
+- **Implied upside/downside:** -34.4%
+- **Estimated intrinsic value per share:** $75.59
+- **Current price per share:** $115.27
+
+## Business Drivers
+
+- For fiscal 2023, comparable sales growth was driven by growth in average ticket, including strong food sales and higher inflation impacts in certain merchandise categories, as well as growth in transactions. Source: Walmart, 2023, 104169_2023-01-31, paragraph 21
+- For fiscal 2023, the increase was primarily due to comparable sales growth, including fuel, of 14.6%. Source: Walmart, 2023, 104169_2023-01-31, paragraph 52
+- Our objective of prioritizing strong, efficient growth means we will focus on the most productive growth opportunities, increasing comparable store and club sales, accelerating eCommerce sales growth and expanding omni-channel initiatives that complement our... Source: Walmart, 2022, 104169_2022-01-31, paragraph 13
+- For fiscal 2023, the decrease was primarily driven by continued growth in lower margin formats and channels in China and category mix shifts into lower margin categories. Source: Walmart, 2023, 104169_2023-01-31, paragraph 49
+- For fiscal 2021, the increase was primarily due to Flipkart's improved margin mix and reduced fuel sales in the U.K. Source: Walmart, 2022, 104169_2022-01-31, paragraph 44
+
+## Key Risks
+
+- Inflation may pressure costs, demand, or margins. Source: Walmart, 2023, 104169_2023-01-31, paragraph 21
+- Inflation may pressure costs, demand, or margins. Source: Walmart, 2023, 104169_2023-01-31, paragraph 52
+- Inflation may pressure costs, demand, or margins. Source: Walmart, 2023, 104169_2023-01-31, paragraph 44
+- Risk factor: growth in net sales and lower incremental COVID-19 costs. Source: Walmart, 2023, 104169_2023-01-31, paragraph 39
+
+## Valuation Approach
+
+- **Recommended model:** DCF (FCFF)
+- **Secondary approach:** Market Multiples (EV/EBITDA, P/E)
+- **Note:** None
+
+## Core DCF Assumptions
+
+- Year 1 revenue growth: 5.9%
+- End of cycle 1 revenue growth: 4.7%
+- Terminal growth: 4.0%
+- Current operating margin: 4.5%
+- Terminal operating margin: 6.9%
+- ERP: 4.7%
+- Risk-free rate: 4.2%
+
+## Monte Carlo Risk View
+
+- P10 equity value: $450.54bn
+- P50 equity value: $608.45bn
+- P90 equity value: $758.02bn
+- Probability undervalued: 0.2%
+- Successful scenarios: 1000
+
+## Market-Implied Expectations
+
+- Implied first-cycle starting revenue growth: 44.4%
+- Implied terminal operating margin: 10.5%
+- Assessment: The market value is materially above the model-implied equity value under the current assumptions. The market implies higher near-term revenue growth than the base case. The market implies a higher terminal operating margin than the base case.
+
+## Selected Filing Evidence
+
+1. Comparable sales in the U.S., including fuel, increased 8.2% and 7.7% in fiscal 2023 and 2022, respectively, when compared to the previous fiscal year. Walmart U.S. comparable sales increased 7.0% and 6.4% in fiscal 2023 and 2022, respectively. For fiscal 2023, comparable sales growth was driven by growth in average ticket, including strong food...  
+   Source: Walmart, 2023, 104169_2023-01-31, 21
+2. Net sales for the Sam's Club segment increased $10.8 billion or 14.7% and $9.6 billion or 15.1% for fiscal 2023 and 2022, respectively, when compared to the previous fiscal year. For fiscal 2023, the increase was primarily due to comparable sales growth, including fuel, of 14.6%. Comparable sales benefited from growth in transactions and average...  
+   Source: Walmart, 2023, 104169_2023-01-31, 52
+3. Our objective of prioritizing strong, efficient growth means we will focus on the most productive growth opportunities, increasing comparable store and club sales, accelerating eCommerce sales growth and expanding omni-channel initiatives that complement our flywheel strategy while slowing the rate of growth of new stores and clubs. At times, we...  
+   Source: Walmart, 2022, 104169_2022-01-31, 13
+4. Net sales for the Walmart U.S. segment increased $27.3 billion or 6.9% and $23.3 billion or 6.3% for fiscal 2023 and 2022, respectively, when compared to the previous fiscal year. The increases in net sales were primarily due to increases in comparable sales of 7.0% and 6.4% for fiscal 2023 and 2022, respectively. Comparable sales in fiscal 2023...  
+   Source: Walmart, 2023, 104169_2023-01-31, 44
+5. For fiscal 2023, operating expenses as a percentage of net sales increased 23 basis points when compared to the previous fiscal year. Operating expenses as a percentage of net sales were impacted by charges of $3.3 billion related to opioid-related legal settlements and charges of $0.8 billion related to the reorganization and restructuring of...  
+   Source: Walmart, 2023, 104169_2023-01-31, 39
+
+## Disclaimer
+
+This report is generated by an experimental research system. It is not financial advice. Validate every data point, assumption, and source before making any investment decision.
