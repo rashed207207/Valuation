@@ -1,6 +1,7 @@
 from __future__ import annotations
 import warnings
 import numpy as np
+from equity_research_ai.valuation.model_router import select_valuation_model
 
 
 def build_company_profile(revenue_history, net_income_history, ebit_history,
@@ -163,6 +164,28 @@ def build_company_profile(revenue_history, net_income_history, ebit_history,
 
     crp = country_risk_premium_table.get(country, 0)
 
+    # Business-type classification: diagnostic flags for routing, without changing current valuation math.
+    if is_financial_firm:
+        business_type = 'financial_firm'
+    elif is_reit:
+        business_type = 'reit'
+    elif is_utility:
+        business_type = 'utility'
+    elif is_commodity_linked:
+        business_type = 'commodity_linked'
+    elif is_solvency_risk or life_cycle_stage == 'distress':
+        business_type = 'distressed'
+    elif 'telecom' in sector_l or 'communication' in sector_l or 'communications' in sector_l:
+        business_type = 'telecom_leverage_heavy'
+    elif 'retail' in sector_l or 'consumer defensive' in sector_l or 'consumer staples' in sector_l:
+        business_type = 'mature_retailer'
+    elif 'consumer cyclical' in sector_l or 'consumer discretionary' in sector_l:
+        business_type = 'multi_segment_platform' if (revenue_cagr is not None and revenue_cagr > 0.08) else 'mature_retailer'
+    elif 'technology' in sector_l or 'internet' in sector_l or 'software' in sector_l:
+        business_type = 'consumer_technology_platform' if ('consumer' in sector_l or 'internet' in sector_l or 'software' in sector_l) and (size_category in {'mid_cap', 'large_cap'} or revenue_cagr is not None) else 'multi_segment_platform'
+    else:
+        business_type = 'general_company'
+
     result = {
         'sector_flags': {
             'is_financial_firm': is_financial_firm,
@@ -170,6 +193,7 @@ def build_company_profile(revenue_history, net_income_history, ebit_history,
             'is_utility': is_utility,
             'is_commodity_linked': is_commodity_linked,
         },
+        'business_type': business_type,
         'has_positive_reliable_fcf': has_positive_reliable_fcf,
         'earnings_quality_ratio': round(float(earnings_quality), 2) if not np.isnan(earnings_quality) else None,
         'is_cyclical': is_cyclical,
@@ -189,6 +213,7 @@ def build_company_profile(revenue_history, net_income_history, ebit_history,
         },
         'size_category': size_category,
         'market_cap': market_cap,
+        'gics_sector': gics_sector,
         'is_emerging_market': crp > 0.005,
         'country_risk_premium': crp,
         'data_quality_flags': data_quality_flags,
@@ -198,6 +223,10 @@ def build_company_profile(revenue_history, net_income_history, ebit_history,
         'is_utility': is_utility,
         'is_commodity_linked': is_commodity_linked,
     }
+
+    # Diagnostic-only routing metadata; no change to current FCFF DCF mechanics.
+    routing = select_valuation_model(result)
+    result.update(routing)
     return result
 
 
