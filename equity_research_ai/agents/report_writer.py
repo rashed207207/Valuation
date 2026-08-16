@@ -71,6 +71,81 @@ def clean_display_text(text: str, max_len: int = 350) -> str:
 
 
 class ReportWriter:
+    def _format_assumption_bridge(self, assumptions):
+        """Format the assumption bridge for display."""
+        bridge = assumptions.get("assumption_bridge")
+        if not bridge:
+            return "No assumption bridge was generated."
+        
+        sections = []
+        
+        # Revenue Growth
+        if "revenue_growth" in bridge:
+            sections.append("### Revenue Growth")
+            for item in bridge["revenue_growth"]:
+                sections.append(f"- {item}")
+        
+        # Operating Margin
+        if "operating_margin" in bridge:
+            sections.append("\n### Operating Margin")
+            for item in bridge["operating_margin"]:
+                sections.append(f"- {item}")
+        
+        # Capital Efficiency
+        if "capital_efficiency" in bridge:
+            sections.append("\n### Capital Efficiency")
+            for item in bridge["capital_efficiency"]:
+                sections.append(f"- {item}")
+        
+        # Cost of Equity
+        if "cost_of_equity" in bridge:
+            sections.append("\n### Beta and Discount Rate")
+            for item in bridge["cost_of_equity"]:
+                sections.append(f"- {item}")
+        
+        # Terminal Growth
+        if "terminal_growth" in bridge:
+            sections.append("\n### Terminal Growth")
+            for item in bridge["terminal_growth"]:
+                sections.append(f"- {item}")
+        
+        return "\n".join(sections)
+    
+    def _format_assumption_warnings(self, assumptions):
+        """Format assumption warnings for display."""
+        warnings = assumptions.get("assumption_warnings", [])
+        if not warnings:
+            return ""
+        
+        warning_lines = ["## ⚠️ Assumption Warnings\n"]
+        for warning in warnings:
+            warning_lines.append(f"- **Warning:** {warning}")
+        
+        return "\n".join(warning_lines) + "\n"
+    
+    def _format_signal_log(self, assumptions):
+        """Format signal log concisely for display."""
+        signal_log = assumptions.get("signal_log")
+        if not signal_log:
+            return ""
+        
+        # Count signals by type
+        total_signals = 0
+        signal_summary = []
+        
+        for sig_type in ["growth", "margin", "capital", "risks"]:
+            signals = signal_log.get(sig_type, [])
+            count = len(signals)
+            total_signals += count
+            if count > 0:
+                signal_summary.append(f"**{sig_type.capitalize()}**: {count} signal{'s' if count != 1 else ''}")
+        
+        if not signal_summary:
+            return ""
+        
+        summary_text = "\n".join(signal_summary)
+        return f"\n### Narrative Evidence Summary\n{summary_text}"
+
     def write(self, analysis):
         data = analysis.company_data
         ba = analysis.business_analysis
@@ -138,6 +213,11 @@ class ReportWriter:
         drivers = ba.drivers if ba else []
         risks = ba.risks if ba else []
 
+        # Format new transparency sections
+        assumption_bridge_section = self._format_assumption_bridge(assumptions)
+        assumption_warnings_section = self._format_assumption_warnings(assumptions)
+        signal_log_section = self._format_signal_log(assumptions)
+
         return f"""# {data.get('company_name', analysis.ticker)} ({analysis.ticker}) Equity Research Memo
 
 ## Executive View
@@ -172,7 +252,11 @@ class ReportWriter:
 - ERP: {pct(assumptions.get('ERP'))}
 - Risk-free rate: {pct(assumptions.get('risk_free_rate'))}
 
-## Monte Carlo Risk View
+## Assumption Bridge
+
+{assumption_bridge_section}
+
+{assumption_warnings_section}## Monte Carlo Risk View
 
 - P10 equity value: {money(mc.get('p10'))}
 - P50 equity value: {money(mc.get('p50'))}
